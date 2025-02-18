@@ -1,10 +1,7 @@
 import streamlit as st
 import pandas as pd
-import spacy
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
-
-# Load the spaCy model
-nlp = spacy.load('en_core_web_sm')
 
 # Load the dataset
 data = pd.read_excel('AllITBooks_DataSet.xlsx')  # Adjust the path to your .xlsx file
@@ -13,16 +10,9 @@ data = pd.read_excel('AllITBooks_DataSet.xlsx')  # Adjust the path to your .xlsx
 data['Description'] = data['Description'].str.replace(r'\nBook Description:', '', regex=True)
 data['Description'] = data['Description'].str.strip()  # Remove any extra spaces
 
-# Vectorize the descriptions using spaCy's word embeddings
-def vectorize_text(text):
-    doc = nlp(text)  # Process text with spaCy
-    return doc.vector  # Return the vector representation of the document
-
-# Apply vectorization to the descriptions
-data['Description_Vector'] = data['Description'].apply(vectorize_text)
-
-# Create a 2D array for KMeans (each row is a vector of a book description)
-X = list(data['Description_Vector'])
+# Vectorize the descriptions using TF-IDF
+vectorizer = TfidfVectorizer(stop_words='english', max_features=500)
+X = vectorizer.fit_transform(data['Description'])
 
 # Apply KMeans clustering (you can change the number of clusters)
 num_clusters = 5  # Adjust the number of clusters as needed
@@ -47,3 +37,4 @@ if book_name:
     related_books = data[data['Category_Predicted'] == book['Category_Predicted']].sort_values(by='Description')
     st.write("Related Books:")
     st.write(related_books[['Book_name', 'Description']].head(2))  # Show top 2 related books
+
