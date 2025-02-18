@@ -6,6 +6,9 @@ from sklearn.cluster import KMeans
 # Load the dataset
 data = pd.read_excel('AllITBooks_DataSet.xlsx')  # Adjust the path to your .xlsx file
 
+# Handle missing descriptions
+data['Description'] = data['Description'].fillna('')  # Fill NaN with empty strings
+
 # Preprocess the descriptions (clean the text)
 data['Description'] = data['Description'].str.replace(r'\nBook Description:', '', regex=True)
 data['Description'] = data['Description'].str.strip()  # Remove any extra spaces
@@ -27,14 +30,19 @@ book_name = st.text_input("Enter Book Name:")
 
 if book_name:
     # Filter book based on user input (ignore case)
-    book = data[data['Book_name'].str.contains(book_name, case=False, na=False)].iloc[0]
+    filtered_books = data[data['Book_name'].str.contains(book_name, case=False, na=False)]
     
-    st.subheader(f"Book: {book['Book_name']}")
-    st.write(f"Predicted Category: {book['Category_Predicted']}")
-    st.write(f"Description: {book['Description']}")
+    if not filtered_books.empty:
+        # Get the first book (or show more if you want)
+        book = filtered_books.iloc[0]
     
-    # Display most related books (bonus part)
-    related_books = data[data['Category_Predicted'] == book['Category_Predicted']].sort_values(by='Description')
-    st.write("Related Books:")
-    st.write(related_books[['Book_name', 'Description']].head(2))  # Show top 2 related books
-
+        st.subheader(f"Book: {book['Book_name']}")
+        st.write(f"Predicted Category: {book['Category_Predicted']}")
+        st.write(f"Description: {book['Description']}")
+    
+        # Display most related books (bonus part)
+        related_books = data[data['Category_Predicted'] == book['Category_Predicted']].sort_values(by='Description')
+        st.write("Related Books:")
+        st.write(related_books[['Book_name', 'Description']].head(2))  # Show top 2 related books
+    else:
+        st.error("No books found with that name.")
