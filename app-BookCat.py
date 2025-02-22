@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
+import sys
+st.write(f"Python version: {sys.version}")
 
 # Load the dataset
 data = pd.read_excel('AllITBooks_DataSet.xlsx')  # Adjust the path to your .xlsx file
